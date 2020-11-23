@@ -55,6 +55,12 @@ function configure_nova_hypervisor {
         iniset $NOVA_CONF libvirt cpu_mode "host-passthrough"
     fi
 
+    # mips64-specific configuration
+    if is_arch "mips64"; then
+        iniset $NOVA_CONF libvirt cpu_mode "custom"
+        iniset $NOVA_CONF libvirt cpu_models "Loongson-3A4000"
+    fi
+
     if isset ENABLE_FILE_INJECTION; then
         if [ "$ENABLE_FILE_INJECTION" == "True" ]; then
             # -1 means use libguestfs to inspect the guest OS image for the

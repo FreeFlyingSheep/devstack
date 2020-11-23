@@ -17,6 +17,7 @@
 # - start_apache_server
 # - stop_apache_server
 # - restart_apache_server
+# - enable_apache_server
 
 # Save trace setting
 _XTRACE_LIB_APACHE=$(set +o | grep xtrace)
@@ -165,6 +166,7 @@ function install_apache_wsgi {
     fi
     # WSGI isn't enabled by default, enable it
     enable_apache_mod wsgi
+    enable_apache_server
 }
 
 # apache_site_config_for() - The filename of the site's configuration file.
@@ -251,6 +253,11 @@ function restart_apache_server {
     # to mitigate issues where apache will claim a port it's listening on is
     # still in use and fail to start.
     restart_service $APACHE_NAME
+}
+
+# enable_apache_server() - Enabling apache server
+function enable_apache_server {
+    _enable_service $APACHE_NAME
 }
 
 function write_uwsgi_config {

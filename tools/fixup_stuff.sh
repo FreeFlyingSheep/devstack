@@ -99,6 +99,18 @@ function fixup_ubuntu {
 # Python Packages
 # ---------------
 
+function fixup_lemote {
+    if ! is_lemote; then
+        return
+    fi
+
+    # Install missing tools
+    install_package dstat
+    pip_install -U virtualenv
+    pip_install -U uwsgi
+    pip_install -UI wrapt
+}
+
 function fixup_fedora {
     if ! is_fedora; then
         return
@@ -150,6 +162,8 @@ function fixup_fedora {
     if [[ "$DISTRO" == "f32" ]] && [[ $(rpm --queryformat %{VERSION} -q dnsmasq) != "2.80" ]]; then
         sudo dnf downgrade dnsmasq-2.80 -y
     fi
+
+    fixup_lemote
 }
 
 function fixup_suse {

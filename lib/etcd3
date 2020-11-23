@@ -64,6 +64,9 @@ function start_etcd3 {
     if is_arch "aarch64"; then
         iniset -sudo $unitfile "Service" "Environment" "ETCD_UNSUPPORTED_ARCH=arm64"
     fi
+    if is_arch "mips64"; then
+        iniset -sudo $unitfile "Service" "Environment" "ETCD_UNSUPPORTED_ARCH=mips64le"
+    fi
 
     $SYSTEMCTL daemon-reload
     $SYSTEMCTL enable $ETCD_SYSTEMD_SERVICE

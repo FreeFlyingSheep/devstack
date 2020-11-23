@@ -85,8 +85,13 @@ function install_libvirt {
             install_package edk2.git-aarch64
         fi
 
-        pip_uninstall libvirt-python
-        pip_install_gr libvirt-python
+        if ! is_lemote; then
+            pip_uninstall libvirt-python
+            pip_install_gr libvirt-python
+        else # lemote
+            install_package libvirt-6.6.0
+            install_package python3-libvirt-6.6.0
+        fi
     fi
 
     if [[ $DEBUG_LIBVIRT_COREDUMPS == True ]]; then

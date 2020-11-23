@@ -144,7 +144,11 @@ export PYTHON3_VERSION=${PYTHON3_VERSION:-${_DEFAULT_PYTHON3_VERSION:-3}}
 
 # Create a virtualenv with this
 # Use the built-in venv to avoid more dependencies
-export VIRTUALENV_CMD="python3 -m venv"
+if ! is_lemote; then
+    export VIRTUALENV_CMD="python3 -m venv"
+else # lemote
+    export VIRTUALENV_CMD="python3 -m virtualenv"
+fi
 
 # Default for log coloring is based on interactive-or-not.
 # Baseline assumption is that non-interactive invocations are for CI,
@@ -724,6 +728,8 @@ ETCD_SHA256_ARM64=${ETCD_SHA256_ARM64:-"170b848ac1a071fe7d495d404a868a2c0090750b
 ETCD_SHA256_PPC64=${ETCD_SHA256_PPC64:-"77f807b1b51abbf51e020bb05bdb8ce088cb58260fcd22749ea32eee710463d3"}
 # etcd v3.2.x doesn't have anything for s390x
 ETCD_SHA256_S390X=${ETCD_SHA256_S390X:-""}
+# etcd v3.2.x doesn't have anything for mips64
+ETCD_SHA256_MIPS64=${ETCD_SHA256_MIPS64:-"5632a3ce5d376701f87887ff5caac5d41a74ec6c1e691a661dc6ce1f1d2effab"}
 # Make sure etcd3 downloads the correct architecture
 if is_arch "x86_64"; then
     ETCD_ARCH="amd64"
@@ -741,6 +747,16 @@ elif is_arch "s390x"; then
     if [[ -n "${ETCD_DOWNLOAD_URL}" ]]; then
         ETCD_ARCH="s390x"
         ETCD_SHA256=${ETCD_SHA256:-$ETCD_SHA256_S390X}
+    else
+        exit_distro_not_supported "etcd3. No custom ETCD_DOWNLOAD_URL provided."
+    fi
+elif is_arch "mips64"; then
+    # An etcd3 binary for mips64 is not available on github like it is
+    # for other arches. Only continue if a custom download URL was
+    # provided.
+    if [[ -n "${ETCD_DOWNLOAD_URL}" ]]; then
+        ETCD_ARCH="mips64"
+        ETCD_SHA256=${ETCD_SHA256:-$ETCD_SHA256_MIPS64}
     else
         exit_distro_not_supported "etcd3. No custom ETCD_DOWNLOAD_URL provided."
     fi

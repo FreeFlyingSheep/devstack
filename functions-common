@@ -328,6 +328,11 @@ function _ensure_lsb_release {
         return
     fi
 
+    # lemote
+    if grep -q "lemote" /proc/version; then
+        return
+    fi
+
     if [[ -x $(command -v apt-get 2>/dev/null) ]]; then
         sudo apt-get install -y lsb-release
     elif [[ -x $(command -v zypper 2>/dev/null) ]]; then
@@ -349,9 +354,15 @@ function GetOSVersion {
     # We only support distros that provide a sane lsb_release
     _ensure_lsb_release
 
-    os_RELEASE=$(lsb_release -r -s)
-    os_CODENAME=$(lsb_release -c -s)
-    os_VENDOR=$(lsb_release -i -s)
+    if ! grep -q "lemote" /proc/version; then
+        os_RELEASE=$(lsb_release -r -s)
+        os_CODENAME=$(lsb_release -c -s)
+        os_VENDOR=$(lsb_release -i -s)
+    else # lemote
+        os_RELEASE=$(grep "^VERSION_ID=" /etc/os-release | cut -d '=' -f 2)
+        os_CODENAME=$(grep "^VERSION=" /etc/os-release | cut -d '(' -f 2 | cut -d ')' -f 1)
+        os_VENDOR=$(grep "^NAME=" /etc/os-release | cut -d '=' -f 2)
+    fi
 
     if [[ $os_VENDOR =~ (Debian|Ubuntu|LinuxMint) ]]; then
         os_PACKAGE="deb"
@@ -456,6 +467,9 @@ function is_fedora {
         [ "$os_VENDOR" = "Virtuozzo" ]
 }
 
+function is_lemote {
+    is_fedora && grep -q "lemote" /proc/version
+}
 
 # Determine if current distribution is a SUSE-based distribution
 # (openSUSE, SLE).
@@ -2239,6 +2253,17 @@ function reload_service {
         sudo /bin/systemctl reload-or-restart $1
     else
         sudo service $1 reload
+    fi
+}
+
+# Service wrapper to enable services
+# Note that we already have enable_service above
+# _enable_service service-name
+function _enable_service {
+    if [ -x /bin/systemctl ]; then
+        sudo /bin/systemctl enable $1
+    else
+        sudo service $1 enable
     fi
 }
 
